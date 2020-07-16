@@ -51,6 +51,16 @@ import org.springframework.util.Assert;
  * @see ClassPathBeanDefinitionScanner
  * @see org.springframework.context.support.GenericXmlApplicationContext
  */
+
+/**
+ * 独立的应用程序上下文，接受组件类作为输入-特别是使用@Configuration注释的类，还可以使用javax.inject注释使用普通的@Component类型和符合JSR-330的类。
+ *
+ * 允许使用register（Class ...）一对一注册类，以及使用scan（String ...）进行类路径扫描。
+ *
+ * 如果有多个@Configuration类，则在以后的类中定义的@Bean方法将覆盖在先前的类中定义的方法。 可以利用此属性通过额外的@Configuration类有意覆盖某些bean定义。
+ *
+
+ */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
 	private final AnnotatedBeanDefinitionReader reader;

@@ -511,23 +511,37 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 *    refresh方法在AbstractApplicationContext容器中实现，
+	 *    refresh()方法的作用加载或者刷新当前的配置信息，如果已经存在spring容器，则先销毁之前的容器，重新创建spring容器，载入bean定义，完成容器初始化工作，所以可以看出AnnotationConfigApplicationContext容器是通过调用其父类AbstractApplicationContext的refresh()函数启动整个IoC容器完成对Bean定义的载入。
+	 * @throws BeansException
+	 * @throws IllegalStateException
+	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
+			// 1.Prepare this context for refreshing.
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			//2.获取刷新后的内部Bean工厂，obtainFreshBeanFactory方法为内部bean工厂重新生成id，并返回bean工厂
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			//给beanFactory注册一些标准组建，如ClassLoader，StandardEnvironment，BeanProcess
+
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				//提供给子类实现一些postProcess的注册，如AbstractRefreshableWebApplicationContext注册一些Servlet相关的
+				//postProcess，真对web进行生命周期管理的Scope，通过registerResolvableDependency()方法注册指定ServletRequest，HttpSession，WebRequest对象的工厂方法
+
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				//调用所有BeanFactoryProcessor的postProcessBeanFactory()方法
+
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
@@ -546,6 +560,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 初始化所有的 singletons bean（lazy-init 的除外）
+				// Spring bean 初始化核心方法
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -582,7 +598,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareRefresh() {
 		// Switch to active.
+		//设置容器启动时间
 		this.startupDate = System.currentTimeMillis();
+		//启动标识
 		this.closed.set(false);
 		this.active.set(true);
 
@@ -596,10 +614,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		//空方法，用于子容器自定义个性化的属性设置方法
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		//检验属性的合法等
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...
@@ -633,7 +653,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//为beanfactory生成唯一序列化id，beanfactory已经在GenericApplicationContext构造函数中初始化了，refreshBeanFactory的逻辑在AbstractApplicationContext的实现类GenericApplicationContext中
 		refreshBeanFactory();
+		//获取beanfactory
+
 		return getBeanFactory();
 	}
 
@@ -650,6 +673,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Configure the bean factory with context callbacks.
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+		//设置忽略的自动装配接口，表示这些接口的实现类不允许通过接口自动注入
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -659,7 +683,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
-		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
+		//注册可以自动装配的组件，就是可以在任何组件中允许自动注入的组件
+ 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
@@ -675,6 +700,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Register default environment beans.
+
+	  // 给beanfactory容器中注册组件ConfigurableEnvironment、systemProperties、systemEnvironment
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
 		}

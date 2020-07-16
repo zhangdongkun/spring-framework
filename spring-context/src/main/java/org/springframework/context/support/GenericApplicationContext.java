@@ -91,6 +91,14 @@ import org.springframework.util.Assert;
  * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
  * @see org.springframework.beans.factory.support.PropertiesBeanDefinitionReader
  */
+
+/**
+ * 通用ApplicationContext实现，该实现拥有一个内部DefaultListableBeanFactory实例，并且不采用特定的bean定义格式。 实现BeanDefinitionRegistry接口，以便允许将任何bean定义读取器应用于该接口。
+ *
+ * 典型用法是通过BeanDefinitionRegistry接口注册各种Bean定义，然后调用AbstractApplicationContext.refresh（）来使用应用程序上下文语义初始化这些Bean（处理ApplicationContextAware，自动检测BeanFactoryPostProcessors等）。
+ *
+ * 与为每次刷新创建一个新的内部BeanFactory实例的其他ApplicationContext实现相反，此上下文的内部BeanFactory从一开始就可用，以便能够在其上注册Bean定义。 AbstractApplicationContext.refresh（）只能被调用一次。
+ */
 public class GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry {
 
 	private final DefaultListableBeanFactory beanFactory;
