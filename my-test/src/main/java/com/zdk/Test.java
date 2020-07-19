@@ -13,6 +13,7 @@ public class Test {
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
 		BeanUtils.printAllBeans(applicationContext);
 
+
 	}
 }
 

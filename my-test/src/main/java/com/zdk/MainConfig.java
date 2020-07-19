@@ -1,20 +1,25 @@
 package com.zdk;
 
-import com.zdk.domain.Person;
-import org.springframework.context.annotation.*;
+import com.zdk.service.AopServiceTest;
+import com.zdk.utils.BeanUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Configuration
-@ComponentScan
-@Import({MyBeanDefinitionRegister.class})
+@ComponentScan(value = "com.zdk")
+@EnableAspectJAutoProxy
 public class MainConfig {
-	@Bean
-	@Conditional({LinuxCondition.class})
-	public Person person01(){
-		return  new Person("Bill",10);
+	public static void main(String[] args) {
+		ApplicationContext  applicationContext =
+				new AnnotationConfigApplicationContext(MainConfig.class);
+		//BeanUtils.printAllBeans(applicationContext);
+		AopServiceTest test = (AopServiceTest)applicationContext.getBean("aopServiceTest");
+		test.logTest();
 	}
 
-	@Bean
-	public Person person02(){
-		return  new Person("lcs",10);
-	}
+
+
 }
